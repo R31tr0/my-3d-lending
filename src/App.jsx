@@ -28,9 +28,9 @@ export default function App() {
       >
         <LaptopScene />
         <OrbitControls
-          enableRotate={true}
-          enablePan={true}
-          enableZoom={true}
+          enableRotate={false}
+          enablePan={false}
+          enableZoom={false}
         />
       </Canvas>
     </div>
