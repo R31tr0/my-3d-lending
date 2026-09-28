@@ -1,0 +1,71 @@
+.hero-overlay {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(2rem, 7vw, 6rem);
+  pointer-events: none;
+  color: #f0f9ff;
+  align-items: center;
+}
+
+.hero-intro {
+  max-width: 52rem;
+}
+
+.hero-title {
+  margin: 0;
+  font-size: clamp(2.75rem, 8vw, 7rem);
+  font-weight: 700;
+  letter-spacing: -0.07em;
+  line-height: 0.98;
+  text-shadow: 0 2px 30px rgb(8 47 73 / 24%);
+}
+
+.hero-name {
+  color: #67e8f9;
+}
+
+.hero-hint {
+  display: flex;
+  justify-content: center;
+}
+
+.hero-zoom-button {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  place-items: center;
+  border: 1px solid rgb(240 249 255 / 55%);
+  border-radius: 50%;
+  background: rgb(8 47 73 / 20%);
+  color: #f0f9ff;
+  font: inherit;
+  font-size: 1.75rem;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background-color 180ms ease, transform 180ms ease;
+  backdrop-filter: blur(8px);
+}
+
+.hero-zoom-button:hover {
+  transform: translateY(3px);
+  background: rgb(8 47 73 / 48%);
+}
+
+.hero-zoom-button:focus-visible {
+  outline: 2px solid #67e8f9;
+  outline-offset: 4px;
+}
+
+@media (max-width: 600px) {
+  .hero-overlay {
+    padding: 2rem 1.5rem;
+  }
+
+  .hero-hint {
+    justify-content: flex-end;
+  }
+}

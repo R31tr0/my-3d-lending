@@ -1,0 +1,8 @@
+/* LaptopScene renders Three.js objects rather than DOM elements.
+   Its appearance is configured with Three.js lights, geometry, and materials. */
+
+   .canvas-container {
+  width: 100vw;
+  height: 100vh;
+  background-color: #1a1a1a; /* временно добавим фон, чтобы видеть границы канваса */
+}
