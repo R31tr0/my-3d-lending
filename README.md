@@ -98,7 +98,7 @@ function Model() {
 
 | Участник | Роль | Инструменты |
 | --- | --- | --- |
-| [@EgorGromov](https://github.com/егорчик) | 3D-моделирование | Blender, glTF / GLB, текстурирование |
+| [@Aestheteq](https://github.com/Aestheteq) | 3D-моделирование | Blender, glTF / GLB, текстурирование |
 
 
 
