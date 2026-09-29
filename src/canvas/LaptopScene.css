@@ -4,5 +4,5 @@
    .canvas-container {
   width: 100vw;
   height: 100vh;
-  background-color: #1a1a1a; /* временно добавим фон, чтобы видеть границы канваса */
+  background-color: #1f82df; /* временно добавим фон, чтобы видеть границы канваса */
 }

@@ -10,16 +10,7 @@ export default function HeroOverlay({ onZoom }) {
         </h1>
       </div>
 
-      {/* Подсказка внизу */}
-      <div className="hero-hint">
-        <button 
-          onClick={onZoom}
-          className="hero-zoom-button"
-          aria-label="Приблизить ноутбук"
-        >
-          ↓
-        </button>
-      </div>
+      
     </div>
   );
 }
