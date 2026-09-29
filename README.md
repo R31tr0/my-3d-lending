@@ -49,7 +49,7 @@
 | Blender | Моделирование, материалы, настройка сцены |
 | glTF / GLB | Формат экспорта для веба |
 
-Модели создаёт отдельный участник  (см. раздел Contributor ). Готовые файлы экспортируются из Blender в `.glb` и кладутся в `public/models`.
+Модели создаёт отдельный участник  (см. раздел collaborations ). Готовые файлы экспортируются из Blender в `.glb` и кладутся в `public/models`.
 
 ## Быстрый старт
 
@@ -94,11 +94,11 @@ function Model() {
 ```
 
 
-## Contributor 
+## collaborations
 
 | Участник | Роль | Инструменты |
 | --- | --- | --- |
-| [@EgorGromov](https://github.com/егорчик) | 3D-моделирование | Blender, glTF / GLB, текстурирование |
+| [@Aestheteq](https://github.com/Aestheteq) | 3D-моделирование | Blender, glTF / GLB, текстурирование |
 
 
 
