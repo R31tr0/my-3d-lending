@@ -1,15 +1,21 @@
 import * as THREE from 'three';
 import { Canvas } from '@react-three/fiber';
+import { useState } from 'react';
 // import { OrbitControls } from '@react-three/drei';
 import LaptopScene from './canvas/LaptopScene';
 import SkyDome, { SKY } from './canvas/SkyDome';
 import HeroOverlay from './components/HeroOverlay';
+import StackPage from './components/StackPage';
 import './App.css';
 
 export default function App() {
+  const [showStack, setShowStack] = useState(false);
+  const [showHero, setShowHero] = useState(true);
+
   return (
     <div className="app-shell">
-      <HeroOverlay />
+      <HeroOverlay isVisible={showHero} />
+      {showStack && <StackPage />}
 
       <Canvas
         camera={{ position: [3.6, 0.39, -1.2], fov: 40 }}
@@ -45,7 +51,10 @@ export default function App() {
        
         <directionalLight position={[4, 2, -6]} color="#7fb6ff" intensity={0.6} />
 
-        <LaptopScene />
+        <LaptopScene
+          onCameraEndChange={setShowStack}
+          onIntroVisibilityChange={setShowHero}
+        />
       </Canvas>
     </div>
   );

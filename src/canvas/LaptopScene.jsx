@@ -13,7 +13,7 @@ const LID_BACK_OFFSET = new Vector3(-0.2, 0, 0);
 const SCREEN_ROTATION_OFFSET = new Quaternion().setFromAxisAngle(LID_HINGE_AXIS, MathUtils.degToRad(-7.5));
 const SCREEN_FORWARD_OFFSET = new Vector3(0.01, 0.009, 0);
 
-function LaptopModel() {
+function LaptopModel({ onCameraEndChange, onIntroVisibilityChange }) {
   // Загружаем 3D-модель 
   const { scene } = useGLTF('/models/Laptop_project.glb');
   const laptopbottom = scene.getObjectByName('bottom_laptop');
@@ -27,6 +27,8 @@ function LaptopModel() {
   const lidRotation = useRef(new Quaternion());
   const zoomProgress = useRef(0);
   const zoomTarget = useRef(0);
+  const cameraAtEnd = useRef(false);
+  const scrollActive = useRef(false);
   const camera = useThree((state) => state.camera);
   const cameraStart = useRef(new Vector3(3.6, 0.39, -1.2));
   const cameraEnd = useRef(new Vector3(0.32, 0.30, 0.03));
@@ -50,6 +52,11 @@ function LaptopModel() {
     }
 
     zoomProgress.current = MathUtils.damp(zoomProgress.current, zoomTarget.current, 3, delta);
+    const reachedCameraEnd = zoomProgress.current >= 0.995;
+    if (reachedCameraEnd !== cameraAtEnd.current) {
+      cameraAtEnd.current = reachedCameraEnd;
+      onCameraEndChange(reachedCameraEnd);
+    }
     camera.position.lerpVectors(cameraStart.current, cameraEnd.current, zoomProgress.current);
     cameraLookTarget.current.set(0, 0, 0).lerp(screenFocus.current, zoomProgress.current);
     camera.lookAt(cameraLookTarget.current);
@@ -62,6 +69,18 @@ function LaptopModel() {
     laptopbottom?.scale.set(3, 3, 3);
     screenlaptop?.scale.set(3, 3, 3);
     laptoptop?.scale.set(3, 3, 3);
+
+    if (screenlaptop?.material) {
+      const makeBlackMaterial = (material) => {
+        const blackMaterial = material.clone();
+        blackMaterial.color?.set('#000000');
+        return blackMaterial;
+      };
+
+      screenlaptop.material = Array.isArray(screenlaptop.material)
+        ? screenlaptop.material.map(makeBlackMaterial)
+        : makeBlackMaterial(screenlaptop.material);
+    }
 
     if (screenlaptop && laptoptop) {
       screenlaptop.geometry.computeBoundingBox();
@@ -76,6 +95,15 @@ function LaptopModel() {
 
     //  Обработчик вращения колесика мыши
     const handleWheel = (e) => {
+      const stackContent = document.querySelector('[data-stack-scroll]');
+      if (
+        zoomProgress.current >= 0.995 &&
+        stackContent?.contains(e.target) &&
+        (e.deltaY > 0 || stackContent.scrollTop > 0)
+      ) {
+        return;
+      }
+
       // Блокируем реальную прокрутку страницы сайта вниз/вверх
       e.preventDefault();
 
@@ -84,6 +112,12 @@ function LaptopModel() {
 
       // Ограничиваем скролл, чтобы он не уходил в минус
       if (scrollAmount.current < 0) scrollAmount.current = 0;
+
+      const isScrollActive = scrollAmount.current > 0;
+      if (isScrollActive !== scrollActive.current) {
+        scrollActive.current = isScrollActive;
+        onIntroVisibilityChange(!isScrollActive);
+      }
 
       lidTarget.current = MathUtils.clamp(scrollAmount.current / LID_SCROLL_DISTANCE, 0, 1);
       zoomTarget.current = MathUtils.clamp((scrollAmount.current - ZOOM_START) / ZOOM_DISTANCE, 0, 1);
@@ -96,7 +130,7 @@ function LaptopModel() {
     return () => {
       window.removeEventListener('wheel', handleWheel);
     };
-  }, [laptopbottom, screenlaptop, laptoptop]);
+  }, [laptopbottom, onCameraEndChange, onIntroVisibilityChange, screenlaptop, laptoptop]);
 
   return (
     <group position={[0, -0.5, 0]} scale={[1, 1, 1]}>
@@ -105,12 +139,15 @@ function LaptopModel() {
   );
 }
 
-export default function LaptopScene() {
+export default function LaptopScene({ onCameraEndChange, onIntroVisibilityChange }) {
   return (
     <>
       <ambientLight intensity={1.5} />
       <directionalLight position={[10, 10, 5]} intensity={2} />
-      <LaptopModel />
+      <LaptopModel
+        onCameraEndChange={onCameraEndChange}
+        onIntroVisibilityChange={onIntroVisibilityChange}
+      />
       
     </>
   );
