@@ -31,7 +31,7 @@ function LaptopModel({ onCameraEndChange, onIntroVisibilityChange }) {
   const scrollActive = useRef(false);
   const camera = useThree((state) => state.camera);
   const cameraStart = useRef(new Vector3(3.6, 0.39, -1.2));
-  const cameraEnd = useRef(new Vector3(0.32, 0.30, 0.03));
+  const cameraEnd = useRef(new Vector3(0.2, 0.30, 0.03));
   const cameraLookTarget = useRef(new Vector3());
   const screenFocus = useRef(new Vector3(-0.25, 0.24, 0.21));
   const screenBasePosition = useRef(screenlaptop.position.clone());

@@ -14,7 +14,7 @@ export default function HeroOverlay({ isVisible }) {
           <span className="hero-name">Илья</span>
         </h1>
         <p className="hero-role">Фронтенд-разработчик</p>
-        <p className="hero-description">Создаю выразительные интерфейсы<br />и интерактивные 3D-сцены.</p>
+        <p className="hero-description">Создаю веб приложения<br />и архитектурные решения </p>
       </div>
     </section>
   );
