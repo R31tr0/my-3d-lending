@@ -1,6 +1,5 @@
 # my-3d-lending
-  в разработке =
-  PoC Proof of Concept
+  в разработке 
 
 Страница-визитка с интерактивными 3D-моделями на **React Three Fiber**.
 
@@ -129,6 +128,6 @@ my-lending/
 главную сцену выполнил  @Aestheteq
 логотипы js ts node js vite  были выполнены https://sketchfab.com/alex-human
 3д модель гитхаб лого была взята у https://iconscout.com/contributors/stynxr-3d
-3 д модель рук  The Creation of Adam была взята у https://sketchfab.com/norgeotloic
+
 
 .
