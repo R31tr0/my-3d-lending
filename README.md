@@ -1,6 +1,5 @@
 # my-3d-lending
-  в разработке =
-  PoC Proof of Concept
+  в разработке 
 
 Страница-визитка с интерактивными 3D-моделями на **React Three Fiber**.
 
