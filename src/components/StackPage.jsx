@@ -9,7 +9,7 @@ import './StackPage.css';
 const technologies = [
   { name: 'React', category: 'UI', description: 'Интерфейсы и архитектура компонентов', model: { type: 'gltf', src: '/models/react_logo_circle.glb', rotation: [0, 0, 0] } },
   { name: 'TypeScript', category: 'LANGUAGE', description: 'Типизация и более надёжный код', model: { type: 'gltf', src: '/models/ts-logo.glb', rotation: [0, 0, 0] } },
-  { name: 'JavaScript', category: 'LANGUAGE', description: 'Логика и интерактивность проектов', model: { type: 'gltf', src: '/models/js-logo.glb', rotation: [0, Math.PI, 0] } },
+  { name: 'JavaScript', category: 'LANGUAGE', description: 'Логика и интерактивность проектов', model: { type: 'gltf', src: '/models/js-logo.glb', rotation: [0, Math.PI / -6, 0] } },
   { name: 'Node.js', category: 'RUNTIME', description: 'Среда выполнения JavaScript', model: { type: 'gltf', src: '/models/node.js_logo__3d_model.glb', rotation: [0, Math.PI, 0] } },
   { name: 'Vite', category: 'BUILD', description: 'Сборка и быстрый цикл разработки', model: { type: 'gltf', src: '/models/vitest-logo.glb', rotation: [0, 0, 0] } },
   { name: 'Axios', category: 'HTTP', description: 'Запросы к API и работа с данными', model: { type: 'svg', src: '/models/axios.svg' , rotation: [0, Math.PI, 0] } },
@@ -28,8 +28,10 @@ const scrollbarColors = [
   '#f4f4ef',
 ];
 
+// Загружает GLTF-модель и подгоняет её размер и положение под карточку технологии.
 function LoadedModel({ modelUrl, rotation }) {
   const { scene } = useGLTF(modelUrl);
+  // Создаёт копию и нормализует её, не изменяя исходную сцену из кэша.
   const [modelFit] = useState(() => {
     const modelScene = scene.clone(true);
     const bounds = new Box3().setFromObject(modelScene);
@@ -50,12 +52,14 @@ function LoadedModel({ modelUrl, rotation }) {
     </group>
   );
 }
-
+// Преобразует залитые контуры SVG в центрированные и объединённые 3D-меши.
 function SvgLogoModel({ src, rotation, color: colorOverride }) {
   const svg = useLoader(SVGLoader, src);
+  // Пересобирает геометрию только при изменении загруженного SVG.
   const model = useMemo(() => {
     const geometriesByColor = new Map();
 
+    // Создаёт объём для каждого залитого контура и группирует его по цвету.
     svg.paths.forEach((path, pathIndex) => {
       const fill = path.userData.style.fill;
       if (!fill || fill === 'none') return;
@@ -74,8 +78,10 @@ function SvgLogoModel({ src, rotation, color: colorOverride }) {
       }
     });
 
+    // Объединяет контуры одного цвета, чтобы сократить количество мешей.
     const entries = [...geometriesByColor].map(([fill, geometries]) => {
       const geometry = mergeGeometries(geometries);
+      // Освобождает исходную геометрию после объединения.
       geometries.forEach((sourceGeometry) => sourceGeometry.dispose());
       return { color: colorOverride ?? fill, geometry };
     });
@@ -102,7 +108,7 @@ function SvgLogoModel({ src, rotation, color: colorOverride }) {
         scale={[model.scale, -model.scale, model.scale]}
         position={[-model.center.x * model.scale, model.center.y * model.scale, -model.center.z * model.scale]}
       >
-        {model.entries.map(({ color, geometry }) => (
+        {model.entries.map(/* Создаёт меш для каждой объединённой группы цвета. */ ({ color, geometry }) => (
           <mesh key={color} geometry={geometry} castShadow receiveShadow>
             <meshStandardMaterial color={color} side={DoubleSide} metalness={0.2} roughness={0.32} />
           </mesh>
@@ -112,9 +118,11 @@ function SvgLogoModel({ src, rotation, color: colorOverride }) {
   );
 }
 
+// Показывает модель из конфигурации и вращает её вслед за прокруткой стека.
 function TechnologyModel({ modelConfig, scrollProgress }) {
   const model = useRef(null);
 
+  // Обновляет вращение модели без React-перерисовки каждый кадр.
   useFrame(() => {
     if (!model.current) return;
     model.current.rotation.y = scrollProgress.current * Math.PI * 2;
@@ -145,15 +153,18 @@ function TechnologyModel({ modelConfig, scrollProgress }) {
   );
 }
 
+// Создаёт сцену модели, когда карточка приближается к видимой области.
 function TechnologyModelView({ name, modelConfig, scrollProgress }) {
   const view = useRef(null);
   const [shouldRenderModel, setShouldRenderModel] = useState(false);
 
+  // Следит за карточкой и отключает наблюдение после первого появления.
   useEffect(() => {
     const element = view.current;
     if (!element) return undefined;
 
     const observer = new IntersectionObserver(
+      // Запускает отложенный рендеринг, когда область модели входит в viewport.
       ([entry]) => {
         if (!entry.isIntersecting) return;
         setShouldRenderModel(true);
@@ -166,6 +177,7 @@ function TechnologyModelView({ name, modelConfig, scrollProgress }) {
     );
 
     observer.observe(element);
+    // Отключает наблюдатель, если компонент размонтирован.
     return () => observer.disconnect();
   }, []);
 
@@ -186,14 +198,17 @@ function TechnologyModelView({ name, modelConfig, scrollProgress }) {
   );
 }
 
+// Ограничивает прогресс диапазоном и сглаживает его кубической кривой.
 function smoothStep(start, end, value) {
   const progress = Math.max(0, Math.min(1, (value - start) / (end - start)));
   return progress * progress * (3 - 2 * progress);
 }
 
+// Анимирует падение, приземление и перекат монеты GitHub в финальной сцене.
 function EndingScene({ progress }) {
   const { scene: coinAsset } = useGLTF('/models/github.glb');
   const coin = useRef(null);
+  // Создаёт оси вращения и кватернионы, используемые анимацией монеты.
   const coinRotation = useMemo(() => ({
     tumbleAxis: new Vector3(1, 0.8, 0.55).normalize(),
     tiltAxis: new Vector3(0.65, 0, 1).normalize(),
@@ -203,6 +218,7 @@ function EndingScene({ progress }) {
     roll: new Quaternion(),
   }), []);
 
+  // Один раз центрирует и масштабирует загруженную модель монеты.
   const coinModel = useMemo(() => {
     const scene = coinAsset.clone(true);
     const bounds = new Box3().setFromObject(scene);
@@ -216,6 +232,7 @@ function EndingScene({ progress }) {
     };
   }, [coinAsset]);
 
+  // Вычисляет положение и вращение монеты по прогрессу прокрутки.
   useFrame(() => {
     const value = progress.current;
     const fall = smoothStep(0, 0.38, value);
@@ -262,15 +279,18 @@ function EndingScene({ progress }) {
   );
 }
 
+// Откладывает загрузку сцены монеты до приближения финального блока.
 function EndingSceneView({ progress }) {
   const view = useRef(null);
   const [shouldRenderScene, setShouldRenderScene] = useState(false);
 
+  // Включает сцену при приближении и отключает наблюдение после первого входа.
   useEffect(() => {
     const element = view.current;
     if (!element) return undefined;
 
     const observer = new IntersectionObserver(
+      // Начинает загружать монету только при появлении её области.
       ([entry]) => {
         if (!entry.isIntersecting) return;
         setShouldRenderScene(true);
@@ -283,6 +303,7 @@ function EndingSceneView({ progress }) {
     );
 
     observer.observe(element);
+    // Отключает наблюдатель при удалении финальной сцены.
     return () => observer.disconnect();
   }, []);
 
@@ -302,6 +323,7 @@ function EndingSceneView({ progress }) {
   );
 }
 
+// Отображает стек технологий и финальные карточки, переключаемые прокруткой.
 export default function StackPage() {
   const scrollProgress = useRef(0);
   const endingProgress = useRef(0);
@@ -314,7 +336,7 @@ export default function StackPage() {
         role="region"
         tabIndex={0}
         aria-label="Мой технологический стек"
-        onScroll={(event) => {
+        onScroll={/* Обновляет вращение моделей, финальные карточки и цвет полосы прокрутки. */ (event) => {
           const content = event.currentTarget;
           const scrollRange = content.scrollHeight - content.clientHeight;
           scrollProgress.current = scrollRange > 0 ? content.scrollTop / scrollRange : 0;
@@ -361,13 +383,17 @@ export default function StackPage() {
             'data-ending-step',
             String(activeEndingStep),
           );
+          // Оставляет доступной с клавиатуры только активную финальную карточку.
           content.querySelectorAll('[data-ending-panel]').forEach((panel) => {
             panel.inert = Number(panel.dataset.endingPanel) !== activeEndingStep;
           });
 
           const activePoint = content.getBoundingClientRect().top + content.clientHeight * 0.35;
           const stackItems = [...content.querySelectorAll('.stack-item')];
-          const activeIndex = stackItems.findIndex((item) => item.getBoundingClientRect().bottom > activePoint);
+          const activeIndex = stackItems.findIndex(
+            /* Находит первую карточку, дошедшую до контрольной точки прокрутки. */
+            (item) => item.getBoundingClientRect().bottom > activePoint,
+          );
           const colorIndex = activeIndex === -1 ? scrollbarColors.length - 1 : activeIndex;
           content.style.setProperty(
             '--stack-scrollbar-accent',
@@ -382,7 +408,7 @@ export default function StackPage() {
         </header>
 
         <ol className="stack-list">
-          {technologies.map((technology, index) => (
+          {technologies.map(/* Создаёт карточку и 3D-модель каждой технологии. */ (technology, index) => (
             <li
               className="stack-item"
               key={technology.name}
