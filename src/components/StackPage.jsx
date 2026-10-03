@@ -4,27 +4,28 @@ import { Box3, DoubleSide, ExtrudeGeometry, Quaternion, Vector3 } from 'three';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import StackFooter from './StackFooter';
 import './StackPage.css';
 
 const technologies = [
-  { name: 'React', category: 'UI', description: 'Интерфейсы и архитектура компонентов', model: { type: 'gltf', src: '/models/react_logo_circle.glb', rotation: [0, 0, 0] } },
-  { name: 'TypeScript', category: 'LANGUAGE', description: 'Типизация и более надёжный код', model: { type: 'gltf', src: '/models/ts-logo.glb', rotation: [0, 0, 0] } },
-  { name: 'JavaScript', category: 'LANGUAGE', description: 'Логика и интерактивность проектов', model: { type: 'gltf', src: '/models/js-logo.glb', rotation: [0, Math.PI / -6, 0] } },
-  { name: 'Node.js', category: 'RUNTIME', description: 'Среда выполнения JavaScript', model: { type: 'gltf', src: '/models/node.js_logo__3d_model.glb', rotation: [0, Math.PI, 0] } },
-  { name: 'Vite', category: 'BUILD', description: 'Сборка и быстрый цикл разработки', model: { type: 'gltf', src: '/models/vitest-logo.glb', rotation: [0, 0, 0] } },
-  { name: 'Axios', category: 'HTTP', description: 'Запросы к API и работа с данными', model: { type: 'svg', src: '/models/axios.svg' , rotation: [0, Math.PI, 0] } },
-  { name: 'Zustand', category: 'STATE', description: 'Управление состоянием приложения', model: { type: 'svg', src: '/models/zustand.svg' } },
-  { name: 'Three.js', category: '3D', description: '3D-графика прямо в браузере', model: { type: 'svg', src: '/models/threejs.svg', rotation: [0, 0, 0], color: '#f4f4ef' } },
+  { name: 'JavaScript', category: 'LANGUAGE', description: 'Логика и интерактивность проектов', accent: '#f7df1e', model: { type: 'gltf', src: '/models/js-logo.glb', rotation: [0, Math.PI / -6, 0] } },
+  { name: 'React', category: 'UI LIBRARY', description: 'Интерфейсы и архитектура компонентов', accent: '#61dafb', model: { type: 'gltf', src: '/models/react_logo_circle.glb', rotation: [0, 0, 0] } },
+  { name: 'TypeScript', category: 'LANGUAGE', description: 'Типизация и более надёжный код', accent: '#3178c6', model: { type: 'gltf', src: '/models/ts-logo.glb', rotation: [0, 0, 0] } },
+  { name: 'Node.js', category: 'RUNTIME', description: 'Среда выполнения JavaScript', accent: '#83cd29', model: { type: 'gltf', src: '/models/node.js_logo__3d_model.glb', rotation: [0, Math.PI, 0] } },
+  { name: 'Vite', category: 'BUILD TOOL', description: 'Сборка и быстрый цикл разработки', accent: '#a78bfa', model: { type: 'gltf', src: '/models/vitest-logo.glb', rotation: [0, 0, 0] } },
+  { name: 'Axios', category: 'HTTP CLIENT', description: 'Запросы к API и работа с данными', accent: '#a78bfa', model: { type: 'svg', src: '/models/axios.svg' , rotation: [0, Math.PI, 0] } },
+  { name: 'Zustand', category: 'STATE', description: 'Управление состоянием приложения', accent: '#d6b48c', model: { type: 'svg', src: '/models/zustand.svg' } },
+  { name: 'Three.js', category: '3D / WEBGL', description: '3D-графика прямо в браузере', accent: '#f4f4ef', model: { type: 'svg', src: '/models/threejs.svg', rotation: [0, 0, 0], color: '#f4f4ef' } },
 ];
 
 const scrollbarColors = [
-  '#59bcee',
-  '#3978ff',
-  '#ffd447',
-  '#54c86a',
-  '#f2cf42',
+  '#f7df1e',
+  '#61dafb',
+  '#3178c6',
+  '#83cd29',
+  '#a78bfa',
   '#8b5cf6',
-  '#c8a878',
+  '#d6b48c',
   '#f4f4ef',
 ];
 
@@ -390,6 +391,15 @@ export default function StackPage() {
 
           const activePoint = content.getBoundingClientRect().top + content.clientHeight * 0.35;
           const stackItems = [...content.querySelectorAll('.stack-item')];
+          stackItems.forEach((item) => {
+            const itemCenter = item.getBoundingClientRect().top + item.offsetHeight / 2;
+            const viewportCenter = content.getBoundingClientRect().top + content.clientHeight / 2;
+            const progress = Math.max(
+              0,
+              1 - Math.abs(itemCenter - viewportCenter) / content.clientHeight,
+            );
+            item.style.setProperty('--item-progress', progress);
+          });
           const activeIndex = stackItems.findIndex(
             /* Находит первую карточку, дошедшую до контрольной точки прокрутки. */
             (item) => item.getBoundingClientRect().bottom > activePoint,
@@ -402,9 +412,10 @@ export default function StackPage() {
         }}
       >
         <header className="stack-header">
-         
-          <h1>Мой стек<span>.</span></h1>
-          <p className="stack-lead">Инструменты которые я использую в своих проектах.</p>
+          <div className="stack-header__intro">
+            <h1>Мой стек</h1>
+            <p className="stack-lead">Инструменты, с которыми я работаю .</p>
+          </div>
         </header>
 
         <ol className="stack-list">
@@ -412,13 +423,19 @@ export default function StackPage() {
             <li
               className="stack-item"
               key={technology.name}
-              style={{ '--item-delay': `${220 + index * 200}ms` }}
+              data-index={String(index + 1).padStart(2, '0')}
+              style={{
+                '--item-progress': index === 0 ? 1 : 0,
+                '--tech-accent': technology.accent,
+              }}
             >
               <div className="stack-item__details">
-               
+                <span className="stack-item__index">
+                 
+                </span>
                 <h2>{technology.name}</h2>
                 <p>{technology.description}</p>
-                <span className="stack-item__category">{technology.category}</span>
+                <span className="stack-item__category"><i aria-hidden="true" /> {technology.category}</span>
               </div>
               <TechnologyModelView
                 name={technology.name}
@@ -466,7 +483,7 @@ export default function StackPage() {
                 inert
               >
                 <div className="stack-ending__card">
-                  <span className="stack-ending__eyebrow">LET'S CONNECT</span>
+                  
                   <h2>Где меня найти</h2>
                   <p>
                     На GitHub - мои проекты и эксперименты. Открыт к сотрудничеству,
@@ -483,16 +500,7 @@ export default function StackPage() {
             </div>
           </section>
         </div>
-        <footer className="stack-footer">
-          <span>© R31tr0 </span>
-          <a
-            href="https://github.com/R31tr0/my-3d-lending#readme"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Credits и информация о проекте <span aria-hidden="true">↗</span>
-          </a>
-        </footer>
+        <StackFooter />
       </div>
       <Canvas
         className="stack-view-canvas"

@@ -142,8 +142,8 @@ function LaptopModel({ onCameraEndChange, onIntroVisibilityChange }) {
 export default function LaptopScene({ onCameraEndChange, onIntroVisibilityChange }) {
   return (
     <>
-      <ambientLight intensity={1.5} />
-      <directionalLight position={[10, 10, 5]} intensity={2} />
+      <ambientLight color="#aab8e8" intensity={0.75} />
+      <directionalLight position={[10, 10, 5]} color="#c4d8ff" intensity={1.1} />
       <LaptopModel
         onCameraEndChange={onCameraEndChange}
         onIntroVisibilityChange={onIntroVisibilityChange}

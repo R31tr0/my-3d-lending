@@ -1,0 +1,43 @@
+.stack-footer {
+  position: relative;
+  left: 50%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100vw;
+  margin: 0 0 0 -50vw;
+  padding: 1.75rem clamp(1.25rem, 8vw, 8rem);
+  border-top: 1px solid rgb(255 255 255 / 9%);
+  background: #171a20;
+  color: #888e99;
+  font-family: "Courier New", monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.stack-footer a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #a6aab3;
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+.stack-footer a:hover {
+  color: #e0e3e9;
+}
+
+.stack-footer a:focus-visible {
+  outline: 2px solid #a9c9ff;
+  outline-offset: 4px;
+}
+
+@media (max-width: 640px) {
+  .stack-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+}

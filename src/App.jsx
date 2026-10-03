@@ -32,12 +32,12 @@ export default function App() {
         <fog attach="fog" args={[SKY.fog, 18, 55]} />
 
         {/* Свет */}
-         <hemisphereLight args={['#9cd0ff', '#4a5568', 0.7]} /> 
+         <hemisphereLight args={['#9baee8', '#111526', 0.5]} /> 
        
         <directionalLight
-          position={SKY.sunDir.clone().multiplyScalar(12).toArray()}
-          color="#fff0d6"
-          intensity={2.4}
+          position={SKY.keyLightDir.clone().multiplyScalar(12).toArray()}
+          color="#a9c9ff"
+          intensity={1.1}
           castShadow
           shadow-mapSize={[2048, 2048]}
           shadow-bias={-0.0002}

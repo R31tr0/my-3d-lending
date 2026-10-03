@@ -2,12 +2,12 @@ import * as THREE from 'three';
 import { useMemo } from 'react';
 
 export const SKY = {
-  top: '#0b3d91',
-  mid: '#2f86d6',
-  horizon: '#60b2ed',   
-  bottom: '#266bb0',    
-  fog: '#477ba3',       // цвет тумана, чуть светлее низа, чтобы дальние облака не серели
-  sunDir: new THREE.Vector3(-0.8, 0.28, 0.35).normalize(),
+  top: '#050a18',
+  mid: '#111b38',
+  horizon: '#263454',
+  bottom: '#0a1022',
+  fog: '#18233b',
+  keyLightDir: new THREE.Vector3(-0.8, 0.12, 0.35).normalize(),
 };
 const vertexShader = /* glsl */ `
   varying vec3 vDir;
@@ -22,24 +22,36 @@ const fragmentShader = /* glsl */ `
   uniform vec3 topColor;
   uniform vec3 midColor;
   uniform vec3 horizonColor;
-  uniform vec3 sunDir;
+  uniform vec3 bottomColor;
   varying vec3 vDir;
+
+  float hash21(vec2 p) {
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return fract(p.x * p.y);
+  }
 
   void main() {
     vec3 dir = normalize(vDir);
     float h = dir.y;
 
-    
-    vec3 col = mix(horizonColor, midColor, smoothstep(0.0, 0.25, h));
-    col = mix(col, topColor, smoothstep(0.15, 0.85, h));
+    vec3 col = mix(bottomColor, horizonColor, smoothstep(-0.22, 0.04, h));
+    col = mix(col, midColor, smoothstep(0.02, 0.38, h));
+    col = mix(col, topColor, smoothstep(0.34, 0.88, h));
 
-   
-    col = mix(col, horizonColor, smoothstep(0.0, -0.2, h));
+    vec2 starUv = vec2(atan(dir.z, dir.x) * 0.15915494, asin(clamp(h, -1.0, 1.0)) * 0.31830989) + 0.5;
+    vec2 starGrid = starUv * vec2(340.0, 170.0);
+    vec2 starCell = floor(starGrid);
+    vec2 starOffset = fract(starGrid) - 0.5;
+    float starSeed = hash21(starCell);
+    vec2 starJitter = vec2(hash21(starCell + 13.7), hash21(starCell + 71.3)) - 0.5;
+    float starDot = 1.0 - smoothstep(0.015, 0.085, length(starOffset - starJitter * 0.55));
+    float stars = starDot * step(0.984, starSeed) * smoothstep(0.015, 0.25, h);
+    float starTwinkle = 0.55 + hash21(starCell + 91.7) * 0.45;
+    col += vec3(0.72, 0.81, 1.0) * stars * starTwinkle * 2.1;
 
-   
-    float s = max(dot(dir, normalize(sunDir)), 0.0);
-    vec3 sunCol = vec3(1.0, 0.85, 0.6);
-    col += sunCol * (pow(s, 8.0) * 0.18 + pow(s, 64.0) * 0.5 + pow(s, 1200.0) * 3.0);
+    float brightStars = starDot * step(0.998, starSeed) * smoothstep(0.08, 0.38, h);
+    col += vec3(0.86, 0.91, 1.0) * brightStars * 2.2;
 
     gl_FragColor = vec4(col, 1.0);
     #include <tonemapping_fragment>
@@ -53,7 +65,6 @@ export default function SkyDome() {
       topColor: { value: new THREE.Color(SKY.top) },
       midColor: { value: new THREE.Color(SKY.mid) },
       horizonColor: { value: new THREE.Color(SKY.horizon) },
-      sunDir: { value: SKY.sunDir },
       bottomColor: { value: new THREE.Color(SKY.bottom) },
     }),
     []

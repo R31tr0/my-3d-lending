@@ -11,7 +11,7 @@ export default function HeroOverlay({ isVisible }) {
         
         <h1 className="hero-title">
           <span className="hero-greeting">Привет, я</span>
-          <span className="hero-name">Илья</span>
+          <span className="hero-name">R3tr0</span>
         </h1>
         <p className="hero-role">Фронтенд-разработчик</p>
         <p className="hero-description">Создаю веб приложения<br />и архитектурные решения </p>
