@@ -1,6 +1,13 @@
 import { useGLTF, View } from '@react-three/drei';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
-import { Box3, DoubleSide, ExtrudeGeometry, Quaternion, Vector3 } from 'three';
+import {
+  AdditiveBlending,
+  Box3,
+  DoubleSide,
+  ExtrudeGeometry,
+  Quaternion,
+  Vector3,
+} from 'three';
 import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
@@ -205,6 +212,97 @@ function smoothStep(start, end, value) {
   return progress * progress * (3 - 2 * progress);
 }
 
+// Добавляет за монетой движущийся шейдерный ореол и скользящие световые блики.
+function EndingLightEffects({ progress }) {
+  const glow = useRef(null);
+  const keyLight = useRef(null);
+  const fillLight = useRef(null);
+
+  useFrame(({ clock }) => {
+    const value = progress.current;
+    const fall = smoothStep(0, 0.38, value);
+    const roll = smoothStep(0.48, 0.66, value);
+    const time = clock.elapsedTime;
+    const x = 1.2 * (1 - fall) - roll * 1.9;
+    const y = 1.35 - fall * 1.95 + Math.sin(roll * Math.PI * 2) * 0.035;
+    const intensity = (0.3 + fall * 0.7) * (1 - roll * 0.8);
+
+    if (glow.current) {
+      glow.current.position.set(x, y, -0.2);
+      glow.current.material.uniforms.uTime.value = time;
+      glow.current.material.uniforms.uStrength.value = intensity;
+    }
+
+    if (keyLight.current) {
+      keyLight.current.position.set(
+        x + Math.cos(time * 1.8) * 0.85,
+        y + Math.sin(time * 1.8) * 0.65,
+        1.1,
+      );
+      keyLight.current.intensity = 22 * intensity;
+    }
+
+    if (fillLight.current) {
+      fillLight.current.position.set(
+        x + Math.cos(time * 1.3 + Math.PI) * 0.9,
+        y + Math.sin(time * 1.3 + Math.PI) * 0.7,
+        0.7,
+      );
+      fillLight.current.intensity = 16 * intensity;
+    }
+  });
+
+  return (
+    <>
+      <mesh ref={glow} position={[1.2, 1.35, -0.2]} renderOrder={-1}>
+        <planeGeometry args={[4.2, 4.2]} />
+        <shaderMaterial
+          transparent
+          depthWrite={false}
+          blending={AdditiveBlending}
+          uniforms={{
+            uTime: { value: 0 },
+            uStrength: { value: 0 },
+          }}
+          //ШЕЙДЕРЫ: создают движущийся ореол и световые блики за монетой.
+          vertexShader={`
+            varying vec2 vUv;
+
+            void main() {
+              vUv = uv;
+              gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+          `}
+          fragmentShader={`
+            uniform float uTime;
+            uniform float uStrength;
+            varying vec2 vUv;
+
+            void main() {
+              vec2 point = (vUv - 0.5) * 2.0;
+              float radius = length(point);
+              float angle = atan(point.y, point.x);
+              float core = exp(-radius * radius * 5.0);
+              float halo = exp(-pow((radius - 0.56) * 5.0, 2.0));
+              float sweep = pow(max(0.0, cos(angle - uTime * 1.8)), 18.0)
+                * exp(-pow((radius - 0.58) * 4.0, 2.0));
+              float arcs = pow(max(0.0, cos(angle * 3.0 + uTime * 1.25)), 24.0)
+                * exp(-pow((radius - 0.7) * 5.0, 2.0));
+              float strength = (core * 0.2 + halo * 0.22 + sweep * 0.7 + arcs * 0.35)
+                * uStrength;
+              vec3 color = vec3(1.0);
+
+              gl_FragColor = vec4(color * strength, strength);
+            }
+          `}
+        />
+      </mesh>
+      <pointLight ref={keyLight} color="#ffffff" intensity={0} distance={5} decay={2} />
+      <pointLight ref={fillLight} color="#ffffff" intensity={0} distance={5} decay={2} />
+    </>
+  );
+}
+
 // Анимирует падение, приземление и перекат монеты GitHub в финальной сцене.
 function EndingScene({ progress }) {
   const { scene: coinAsset } = useGLTF('/models/github.glb');
@@ -262,8 +360,9 @@ function EndingScene({ progress }) {
 
   return (
     <>
-      <ambientLight intensity={1.8} />
-      <directionalLight position={[2, 4, 5]} intensity={2.5} />
+      <ambientLight intensity={0.8} />
+      <directionalLight position={[2, 4, 5]} intensity={2.8} />
+      <EndingLightEffects progress={progress} />
       <group ref={coin}>
         <group
           scale={coinModel.scale}
